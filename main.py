@@ -101,7 +101,7 @@ def webhook():
         api_secret = "UOSpnyh2dgkkdey92wJhNELHTKR9DcWWslLJ"
         url = "https://api-testnet.bybit.com/v5/order/create"
 
-        timestamp = str(int(time.time() * 1000))
+        timestamp = int(round(time.time() * 1000))
         params = {
             "category": "linear",
             "symbol": symbol,
