@@ -128,15 +128,7 @@ def webhook():
             "X-BYBIT-API-SIGN": sign
         }
 
-        # Sort params and create signature
-        sorted_params = "&".join(f"{k}={params[k]}" for k in sorted(params))
-        sign = hmac.new(
-            bytes(api_secret, "utf-8"),
-            bytes(sorted_params, "utf-8"),
-            hashlib.sha256
-        ).hexdigest()
-
-        headers = {"Content-Type": "application/json"}
+        # ⛔ Removed duplicate signing logic — already handled above
         response = requests.post(url, json=params, headers=headers).json()
         logging.info("🟢 Bybit order placed: %s", response)
 
