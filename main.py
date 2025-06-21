@@ -99,14 +99,39 @@ def webhook():
 
         # Execute Market Order on Bybit
         side = 'Buy' if direction == 'long' else 'Sell'
-        response = bybit_client.place_active_order(
-            symbol=symbol,
-            side=side,
-            order_type="Market",
-            qty=position_size,
-            time_in_force="GoodTillCancel",
-            reduce_only=False
-        )
+        import time
+import hmac
+import hashlib
+import requests
+
+# Unified API Market Order (custom request)
+api_key = "LM4Qlftr5LyXDDhFBv"
+api_secret = "KaLEOror79yKA8A5uAnOa5ANYEP0bZrUAA7X"
+url = "https://api-testnet.bybit.com/v5/order/create"
+
+timestamp = str(int(time.time() * 1000))
+params = {
+    "category": "linear",
+    "symbol": symbol,
+    "side": side,
+    "orderType": "Market",
+    "qty": position_size,
+    "timeInForce": "GoodTillCancel",
+    "timestamp": timestamp,
+    "apiKey": api_key
+}
+
+# Sort params and create signature
+sorted_params = "&".join(f"{k}={params[k]}" for k in sorted(params))
+sign = hmac.new(
+    bytes(api_secret, "utf-8"),
+    bytes(sorted_params, "utf-8"),
+    hashlib.sha256
+).hexdigest()
+
+headers = {"Content-Type": "application/json"}
+payload = {**params, "sign": sign}
+response = requests.post(url, json=payload, headers=headers).json()
         logging.info("🟢 Bybit order placed: %s", response)
 
         trade_manager = TradeManager(entry, sl, position_size, direction, atr)
