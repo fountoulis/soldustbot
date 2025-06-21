@@ -3,14 +3,14 @@
 from math import copysign
 import logging
 from flask import Flask, request, jsonify
-from pybit import HTTP
+from bybit import bybit
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
 # ✅ Bybit API Setup (testnet)
-bybit_client = HTTP(
-    endpoint="https://api-testnet.bybit.com",
+bybit_client = bybit(
+    test=True,
     api_key="LM4Qlftr5LyXDDhFBv",
     api_secret="KaLEOror79yKA8A5uAnOa5ANYEP0bZrUAA7X"
 )
@@ -99,15 +99,13 @@ def webhook():
 
         # Execute Market Order on Bybit
         side = 'Buy' if direction == 'long' else 'Sell'
-        response = bybit_client.place_order(
-            category="linear",
-            symbol=symbol,
+        response = bybit_client.Order.Order_new(
             side=side,
+            symbol=symbol,
             order_type="Market",
             qty=position_size,
-            time_in_force="GoodTillCancel",
-            reduce_only=False
-        )
+            time_in_force="GoodTillCancel"
+        ).result()
         logging.info("🟢 Bybit order placed: %s", response)
 
         trade_manager = TradeManager(entry, sl, position_size, direction, atr)
