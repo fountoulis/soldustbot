@@ -127,12 +127,12 @@ def webhook():
 
         # ⛔ Removed duplicate signing logic — already handled above
         final_payload = {
-    **params,
-    "apiKey": api_key,
-    "apiTimestamp": timestamp,
-    "sign": sign
-}
-        response = requests.post(url, json=final_payload, headers=headers).json()
+            **params,
+            "apiKey": api_key,
+            "apiTimestamp": timestamp,
+            "sign": sign
+        }
+                                                        response = requests.post(url, json=final_payload, headers=headers).json()
         logging.info("🟢 Bybit order placed: %s", response)
 
         trade_manager = TradeManager(entry, sl, position_size, direction, atr)
