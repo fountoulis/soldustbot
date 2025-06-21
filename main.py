@@ -122,14 +122,17 @@ def webhook():
         ).hexdigest()
 
         headers = {
-            "Content-Type": "application/json",
-            "X-BYBIT-API-KEY": api_key,
-            "X-BYBIT-API-TIMESTAMP": timestamp,
-            "X-BYBIT-API-SIGN": sign
-        }
+    "Content-Type": "application/json"
+}
 
         # ⛔ Removed duplicate signing logic — already handled above
-        response = requests.post(url, json=params, headers=headers).json()
+        final_payload = {
+    **params,
+    "apiKey": api_key,
+    "apiTimestamp": timestamp,
+    "sign": sign
+}
+response = requests.post(url, json=final_payload, headers=headers).json()
         logging.info("🟢 Bybit order placed: %s", response)
 
         trade_manager = TradeManager(entry, sl, position_size, direction, atr)
