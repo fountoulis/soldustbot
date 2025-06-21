@@ -10,8 +10,8 @@ logging.basicConfig(level=logging.INFO)
 
 # ✅ Bybit API Setup (testnet)
 bybit_client = HTTP(
-    api_key="gPTJNugLA2FF81FtLB",
-    api_secret="5Ms7Rb95PG8LVQ7P2PiidRcMnccDL5x6D9t5",
+    api_key="LM4Qlftr5LyXDDhFBv",
+    api_secret="KaLEOror79yKA8A5uAnOa5ANYEP0bZrUAA7X",
     testnet=True
 )
 
