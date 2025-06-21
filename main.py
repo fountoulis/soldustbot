@@ -102,7 +102,7 @@ def webhook():
         api_secret = "UOSpnyh2dgkkdey92wJhNELHTKR9DcWWslLJ"
         url = "https://api-testnet.bybit.com/v5/order/create"
 
-        timestamp = str(int(time.time() * 1000))
+        timestamp = int(time.time() * 1000)
         params = {
             "category": "linear",
             "symbol": symbol,
@@ -131,8 +131,8 @@ def webhook():
         }
 
         # ⛔ Removed duplicate signing logic — already handled above
-        final_payload = params  # Only the actual order parameters go in the body
-        response = requests.post(url, json=final_payload, headers=headers).json()
+        final_payload = json.dumps(params, separators=(',', ':'))
+        response = requests.post(url, data=final_payload, headers=headers).json()
         logging.info("🟢 Bybit order placed: %s", response)
 
         trade_manager = TradeManager(entry, sl, position_size, direction, atr)
