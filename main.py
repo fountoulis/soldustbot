@@ -1,11 +1,19 @@
-# ✅ SOLUSDT Bot Logic - main.py (με ενσωματωμένο Trailing SL σε TP3/TP4)
+# ✅ SOLUSDT Bot Logic - main.py (με ενσωματωμένο Trailing SL + Bybit Order Execution)
 
 from math import copysign
 import logging
 from flask import Flask, request, jsonify
+from pybit.unified_trading import HTTP
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
+
+# ✅ Bybit API Setup (testnet)
+bybit_client = HTTP(
+    api_key="gPTJNugLA2FF81FtLB",
+    api_secret="5Ms7Rb95PG8LVQ7P2PiidRcMnccDL5x6D9t5",
+    testnet=True
+)
 
 class TradeManager:
     def __init__(self, entry, sl, position_size, direction, atr):
@@ -32,7 +40,6 @@ class TradeManager:
         return self.entry + copysign(rr * self.r, 1 if self.direction == 'long' else -1)
 
     def update_price(self, current_price):
-        # TP Check
         if not self.tp_hit[0] and self._tp_reached(current_price, self.tp1):
             self.tp_hit[0] = True
             self._log_tp(1)
@@ -40,7 +47,7 @@ class TradeManager:
             self.tp_hit[1] = True
             self._log_tp(2)
             self.trailing_active = True
-            self.trailing_sl = self.entry  # break-even
+            self.trailing_sl = self.entry
             self.last_trailing_price = current_price
         elif not self.tp_hit[2] and self._tp_reached(current_price, self.tp3):
             self.tp_hit[2] = True
@@ -49,7 +56,6 @@ class TradeManager:
             self.tp_hit[3] = True
             self._log_tp(4)
 
-        # Trailing SL Update
         if self.trailing_active:
             progress = abs(current_price - self.last_trailing_price)
             if progress >= self.trailing_step:
@@ -58,7 +64,6 @@ class TradeManager:
                 self.last_trailing_price = current_price
                 logging.info(f"🔄 Trailing SL moved to {self.trailing_sl:.2f}")
 
-        # Force SL Trigger Check
         if self.trailing_active:
             if (self.direction == 'long' and current_price <= self.trailing_sl) or \
                (self.direction == 'short' and current_price >= self.trailing_sl):
@@ -90,6 +95,20 @@ def webhook():
         position_size = 100
         direction = data['signal']
         atr = float(data['atr'])
+        symbol = data['symbol']
+
+        # Execute Market Order on Bybit
+        side = 'Buy' if direction == 'long' else 'Sell'
+        response = bybit_client.place_order(
+            category="linear",
+            symbol=symbol,
+            side=side,
+            order_type="Market",
+            qty=position_size,
+            time_in_force="GoodTillCancel",
+            reduce_only=False
+        )
+        logging.info("🟢 Bybit order placed: %s", response)
 
         trade_manager = TradeManager(entry, sl, position_size, direction, atr)
         logging.info("📥 TradeManager initialized with: %s", trade_manager.__dict__)
