@@ -97,8 +97,8 @@ def webhook():
         side = 'Buy' if direction == 'long' else 'Sell'
 
         # Unified API Market Order (custom request)
-        api_key = "LM4Qlftr5LyXDDhFBv"
-        api_secret = "KaLEOror79yKA8A5uAnOa5ANYEP0bZrUAA7X"
+        api_key = "rj6hSBRPIyZ0IB1gIS"
+        api_secret = "UOSpnyh2dgkkdey92wJhNELHTKR9DcWWslLJ"
         url = "https://api-testnet.bybit.com/v5/order/create"
 
         timestamp = str(int(time.time() * 1000))
