@@ -123,15 +123,17 @@ def webhook():
         ).hexdigest()
 
         headers = {
-            "Content-Type": "application/json",
-            "X-BYBIT-API-KEY": api_key,
-            "X-BYBIT-API-TIMESTAMP": timestamp,
-            "X-BYBIT-API-RECV-WINDOW": recv_window,
-            "X-BYBIT-API-SIGN": sign
+            "Content-Type": "application/json"
         }
 
         # ⛔ Removed duplicate signing logic — already handled above
-        final_payload = params  # Only the actual order parameters
+        final_payload = {
+            **params,
+            "apiKey": api_key,
+            "apiTimestamp": timestamp,
+            "recvWindow": recv_window,
+            "sign": sign
+        }
         response = requests.post(url, json=final_payload, headers=headers).json()
         logging.info("🟢 Bybit order placed: %s", response)
 
