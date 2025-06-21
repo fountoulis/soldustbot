@@ -99,13 +99,13 @@ def webhook():
 
         # Execute Market Order on Bybit
         side = 'Buy' if direction == 'long' else 'Sell'
-        response = bybit_client.place_active_order(
+        response = bybit_client.create_order(
+            category="linear",
             symbol=symbol,
             side=side,
             order_type="Market",
             qty=position_size,
-            time_in_force="GoodTillCancel",
-            reduce_only=False
+            time_in_force="GoodTillCancel"
         )
         logging.info("🟢 Bybit order placed: %s", response)
 
