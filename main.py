@@ -115,7 +115,7 @@ def webhook():
         # ✅ Correct signing method for Bybit Unified API
         recv_window = "5000"
         raw_body = json.dumps(params, separators=(',', ':'))
-        to_sign = timestamp + api_key + recv_window + raw_body
+        to_sign = str(timestamp) + api_key + recv_window + raw_body
         sign = hmac.new(
             bytes(api_secret, "utf-8"),
             bytes(to_sign, "utf-8"),
