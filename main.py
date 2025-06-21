@@ -3,16 +3,16 @@
 from math import copysign
 import logging
 from flask import Flask, request, jsonify
-from pybit.unified_trading import HTTP
+from pybit import HTTP
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
 # ✅ Bybit API Setup (testnet)
 bybit_client = HTTP(
+    endpoint="https://api-testnet.bybit.com",
     api_key="LM4Qlftr5LyXDDhFBv",
-    api_secret="KaLEOror79yKA8A5uAnOa5ANYEP0bZrUAA7X",
-    testnet=True
+    api_secret="KaLEOror79yKA8A5uAnOa5ANYEP0bZrUAA7X"
 )
 
 class TradeManager:
