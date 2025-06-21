@@ -109,7 +109,7 @@ def webhook():
             "orderType": "Market",
             "qty": position_size,
             "timeInForce": "GoodTillCancel",
-            "timestamp": timestamp
+            "apiTimestamp": timestamp
         }
 
         # Sort params and create signature
