@@ -111,10 +111,10 @@ def webhook():
             "timeInForce": "GoodTillCancel"
         }
 
-        # Create sorted string to sign (according to unified spec)
-        query_string = "&".join(f"{k}={params[k]}" for k in sorted(params))
-        to_sign = f"apiKey={api_key}&{query_string}&apiTimestamp={timestamp}"
-
+        # ✅ Correct signing method for Bybit Unified API
+        recv_window = "5000"
+        raw_body = json.dumps(params, separators=(',', ':'))
+        to_sign = timestamp + api_key + recv_window + raw_body
         sign = hmac.new(
             bytes(api_secret, "utf-8"),
             bytes(to_sign, "utf-8"),
@@ -122,16 +122,15 @@ def webhook():
         ).hexdigest()
 
         headers = {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-BYBIT-API-KEY": api_key,
+            "X-BYBIT-API-TIMESTAMP": timestamp,
+            "X-BYBIT-API-RECV-WINDOW": recv_window,
+            "X-BYBIT-API-SIGN": sign
         }
 
         # ⛔ Removed duplicate signing logic — already handled above
-        final_payload = {
-            **params,
-            "apiKey": api_key,
-            "apiTimestamp": timestamp,
-            "sign": sign
-        }
+        final_payload = params  # Only the actual order parameters
         response = requests.post(url, json=final_payload, headers=headers).json()
         logging.info("🟢 Bybit order placed: %s", response)
 
