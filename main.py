@@ -101,15 +101,31 @@ def webhook():
         api_secret = "UOSpnyh2dgkkdey92wJhNELHTKR9DcWWslLJ"
         url = "https://api-testnet.bybit.com/v5/order/create"
 
-        timestamp = int(round(time.time() * 1000))
+        timestamp = str(int(time.time() * 1000))
         params = {
             "category": "linear",
             "symbol": symbol,
             "side": side,
             "orderType": "Market",
             "qty": position_size,
-            "timeInForce": "GoodTillCancel",
-            "apiTimestamp": timestamp
+            "timeInForce": "GoodTillCancel"
+        }
+
+        # Create sorted string to sign (according to unified spec)
+        query_string = "&".join(f"{k}={params[k]}" for k in sorted(params))
+        to_sign = f"apiKey={api_key}&{query_string}&apiTimestamp={timestamp}"
+
+        sign = hmac.new(
+            bytes(api_secret, "utf-8"),
+            bytes(to_sign, "utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+
+        headers = {
+            "Content-Type": "application/json",
+            "X-BYBIT-API-KEY": api_key,
+            "X-BYBIT-API-TIMESTAMP": timestamp,
+            "X-BYBIT-API-SIGN": sign
         }
 
         # Sort params and create signature
@@ -121,8 +137,7 @@ def webhook():
         ).hexdigest()
 
         headers = {"Content-Type": "application/json"}
-        payload = {**params, "sign": sign}
-        response = requests.post(url, json=payload, headers=headers).json()
+        response = requests.post(url, json=params, headers=headers).json()
         logging.info("🟢 Bybit order placed: %s", response)
 
         trade_manager = TradeManager(entry, sl, position_size, direction, atr)
