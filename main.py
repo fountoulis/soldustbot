@@ -132,7 +132,7 @@ def webhook():
     "apiTimestamp": timestamp,
     "sign": sign
 }
-response = requests.post(url, json=final_payload, headers=headers).json()
+        response = requests.post(url, json=final_payload, headers=headers).json()
         logging.info("🟢 Bybit order placed: %s", response)
 
         trade_manager = TradeManager(entry, sl, position_size, direction, atr)
