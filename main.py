@@ -1,7 +1,11 @@
-
 # ✅ SOLUSDT Bot Logic - main.py (με ενσωματωμένο Trailing SL σε TP3/TP4)
 
 from math import copysign
+import logging
+from flask import Flask, request, jsonify
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 class TradeManager:
     def __init__(self, entry, sl, position_size, direction, atr):
@@ -52,12 +56,13 @@ class TradeManager:
                 move = copysign(self.trailing_step, 1 if self.direction == 'long' else -1)
                 self.trailing_sl += move
                 self.last_trailing_price = current_price
-                print(f"🔄 Trailing SL moved to {self.trailing_sl:.2f}")
+                logging.info(f"🔄 Trailing SL moved to {self.trailing_sl:.2f}")
 
         # Force SL Trigger Check
         if self.trailing_active:
-            if (self.direction == 'long' and current_price <= self.trailing_sl) or                (self.direction == 'short' and current_price >= self.trailing_sl):
-                print(f"❌ Trailing SL hit at {current_price:.2f}! Closing position...")
+            if (self.direction == 'long' and current_price <= self.trailing_sl) or \
+               (self.direction == 'short' and current_price >= self.trailing_sl):
+                logging.info(f"❌ Trailing SL hit at {current_price:.2f}! Closing position...")
                 return 'exit'
 
         return 'hold'
@@ -66,13 +71,10 @@ class TradeManager:
         return price >= target if self.direction == 'long' else price <= target
 
     def _log_tp(self, tp_number):
-        print(f"✅ TP{tp_number} reached at price {getattr(self, f'tp{tp_number}'):.2f}")
+        logging.info(f"✅ TP{tp_number} reached at price {getattr(self, f'tp{tp_number}'):.2f}")
 
 
-# ✅ ΣΥΝΕΧΕΙΑ ΕΝΣΩΜΑΤΩΣΗΣ: webhook logic για να τροφοδοτεί το TradeManager με δεδομένα
-
-from flask import Flask, request, jsonify
-
+# ✅ Flask app & webhook
 app = Flask(__name__)
 trade_manager = None
 
@@ -80,7 +82,7 @@ trade_manager = None
 def webhook():
     global trade_manager
     data = request.get_json()
-    print("✅ RECEIVED DATA:", data)
+    logging.info("✅ RECEIVED DATA: %s", data)
 
     try:
         entry = float(data['entry'])
@@ -90,10 +92,11 @@ def webhook():
         atr = float(data['atr'])
 
         trade_manager = TradeManager(entry, sl, position_size, direction, atr)
-        print("📥 TradeManager initialized with:", trade_manager.__dict__)
-        return jsonify({"status": "TradeManager initialized"}), 200
+        logging.info("📥 TradeManager initialized with: %s", trade_manager.__dict__)
+        logging.info("🚨 ALERT RECEIVED SUCCESSFULLY")
+        return jsonify({"ok": True, "received": data}), 200
     except Exception as e:
-        print("❌ Error in webhook:", str(e))
+        logging.error("❌ Error in webhook: %s", str(e))
         return jsonify({"error": str(e)}), 400
 
 @app.route('/price_update', methods=['POST'])
@@ -109,5 +112,5 @@ def price_update():
     return jsonify({"status": status}), 200
 
 if __name__ == '__main__':
-    print("🚀 Starting SOLUSDT bot on http://127.0.0.1:5000")
+    logging.info("🚀 Starting SOLUSDT bot on http://127.0.0.1:5000")
     app.run(debug=True, host="0.0.0.0", port=5000)
